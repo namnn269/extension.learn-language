@@ -1,0 +1,32 @@
+{
+  "name": "hello extension",
+  "description": "first extension",
+  "version": "1.0",
+  "manifest_version": 3,
+  "permissions": [
+    "storage",
+    "alarms",
+    "notifications",
+    "tts",
+    "activeTab",
+    "idle"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "host_permissions": [
+    "https://api.dictionaryapi.dev/*",
+    "https://translation.googleapis.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Vocabulary Learning"
+  },
+  "icons": {
+    "16": "hello.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Vocabulary Extension</title>
+	<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+	<!-- Header buttons -->
+	<div class="header-buttons">
+		<button id="deckListBtn" class="btn btn-primary">Deck List</button>
+		<button id="newDeckBtn" class="btn btn-primary">New Deck</button>
+	</div>
+	
+	<!-- Deck List Section -->
+	<div class="deck-list-section">
+		<div class="deck-item" data-deck-id="1">
+			<label class="deck-label">
+				<input type="checkbox" class="deck-checkbox" value="1">
+				<span class="deck-name">Deck 1</span>
+				<span class="deck-count">23</span>
+			</label>
+		</div>
+		<div class="deck-item" data-deck-id="2">
+			<label class="deck-label">
+				<input type="checkbox" class="deck-checkbox" value="2">
+				<span class="deck-name">Deck 2</span>
+				<span class="deck-count">30</span>
+			</label>
+		</div>
+		<div class="deck-item" data-deck-id="3">
+			<label class="deck-label">
+				<input type="checkbox" class="deck-checkbox" value="3">
+				<span class="deck-name">Deck 3</span>
+				<span class="deck-count">4</span>
+			</label>
+		</div>
+		<div class="deck-item" data-deck-id="4">
+			<label class="deck-label">
+				<input type="checkbox" class="deck-checkbox" value="4">
+				<span class="deck-name">Deck 4</span>
+				<span class="deck-count">42</span>
+			</label>
+		</div>
+	</div>
+	
+	<!-- Control buttons -->
+	<div class="control-buttons">
+		<button id="startBtn" class="btn btn-success">Start</button>
+		<button id="stopBtn" class="btn btn-danger">Stop</button>
+	</div>
+	
+	<!-- Vocabulary Section -->
+	<div class="vocabulary-section">
+		<div class="vocabulary-header">
+			<span class="vocabulary-label">Vocabulary</span>
+			<span class="vocabulary-count">72</span>
+			<button id="newWordBtn" class="btn btn-secondary">New word</button>
+		</div>
+		
+		<div class="vocabulary-list">
+			<div class="vocabulary-item selected" data-word-id="1">
+				<span class="word-text">School</span>
+			</div>
+			<div class="vocabulary-item" data-word-id="2">
+				<span class="word-text">Rule</span>
+			</div>
+			<div class="vocabulary-item" data-word-id="3">
+				<span class="word-text">Table</span>
+			</div>
+			<div class="vocabulary-item" data-word-id="4">
+				<span class="word-text">Chair</span>
+			</div>
+		</div>
+		
+		<div class="vocabulary-actions">
+			<button id="listenBtn" class="btn btn-info">Nghe</button>
+			<button id="detailBtn" class="btn btn-info">Chi tiết</button>
+			<button id="updateBtn" class="btn btn-warning">Cập nhật</button>
+		</div>
+	</div>
+	
+	<!-- Notification Settings -->
+	<div class="notification-settings">
+		<label class="settings-label">Khoảng thời gian thông báo</label>
+		<div class="time-input-group">
+			<input type="number" id="timeValue" class="time-input" value="20" min="1">
+			<select id="timeUnit" class="time-unit">
+				<option value="seconds">Giây</option>
+				<option value="minutes" selected>Phút</option>
+				<option value="hours">Giờ</option>
+			</select>
+			<button id="saveSettingsBtn" class="btn btn-primary">Save</button>
+		</div>
+	</div>
+</div>
+
+<!-- Modal for New Deck -->
+<div id="newDeckModal" class="modal">
+	<div class="modal-content">
+		<h3>New Deck</h3>
+		<input type="text" id="deckNameInput" placeholder="Nhập tên deck" class="input-field">
+		<div class="modal-actions">
+			<button id="saveDeckBtn" class="btn btn-primary">Save</button>
+			<button id="cancelDeckBtn" class="btn btn-secondary">Cancel</button>
+		</div>
+	</div>
+</div>
+
+<!-- Modal for New Word -->
+<div id="newWordModal" class="modal">
+	<div class="modal-content">
+		<h3 id="wordModalTitle">New Word</h3>
+		
+		<select id="deckSelect" class="input-field">
+			<option value="">Chọn deck</option>
+			<option value="1">Deck 1</option>
+			<option value="2">Deck 2</option>
+			<option value="3">Deck 3</option>
+			<option value="4">Deck 4</option>
+		</select>
+		
+		<div class="input-group">
+			<input type="text" id="newWordInput" placeholder="Nhập từ mới" class="input-field">
+			<button id="listenNewWordBtn" class="btn btn-small">Nghe</button>
+		</div>
+		
+		<div class="input-group">
+			<input type="text" id="ipaInput" placeholder="Phiên âm IPA" class="input-field" readonly>
+			<button id="listenIpaBtn" class="btn btn-small">Nghe</button>
+		</div>
+		
+		<div class="input-group">
+			<textarea id="meaningInput" placeholder="Ý nghĩa" class="textarea-field"></textarea>
+			<button id="listenMeaningBtn" class="btn btn-small">Nghe</button>
+		</div>
+		
+		<div class="input-group">
+			<textarea id="exampleInput" placeholder="Ví dụ" class="textarea-field"></textarea>
+			<button id="listenExampleBtn" class="btn btn-small">Nghe</button>
+		</div>
+		
+		<div class="modal-actions">
+			<button id="saveWordBtn" class="btn btn-primary">Save</button>
+			<button id="cancelWordBtn" class="btn btn-secondary">Cancel</button>
+		</div>
+	</div>
+</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
