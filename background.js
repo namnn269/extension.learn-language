@@ -63,7 +63,7 @@ function showWordNotification(word) {
 
     chrome.notifications.create('vocabulary-notification', {
         type: 'basic',
-        iconUrl: 'icon48.png',
+        iconUrl: 'hello.png',
         title: 'Vocabulary Learning',
         message: word,
         priority: 1
@@ -100,26 +100,9 @@ chrome.runtime.onInstalled.addListener(function (details) {
         console.log('Vocabulary Extension installed');
 
         // Initialize default data
-        const defaultDecks = [
-            {id: 1, name: 'Basic Words'},
-            {id: 2, name: 'Advanced Words'},
-            {id: 3, name: 'Business English'},
-            {id: 4, name: 'Daily Conversation'}
-        ];
+        const defaultDecks = [];
 
-        const defaultWords = [
-            {id: 1, deckId: 1, word: 'Hello', ipa: '/həˈloʊ/', meaning: 'Xin chào', example: 'Hello, how are you?'},
-            {id: 2, deckId: 1, word: 'World', ipa: '/wɜːrld/', meaning: 'Thế giới', example: 'Welcome to the world.'},
-            {id: 3, deckId: 2, word: 'Beautiful', ipa: '/ˈbjuːtɪfəl/', meaning: 'Đẹp', example: 'She is beautiful.'},
-            {
-                id: 4,
-                deckId: 2,
-                word: 'Wonderful',
-                ipa: '/ˈwʌndərfəl/',
-                meaning: 'Tuyệt vời',
-                example: 'What a wonderful day!'
-            }
-        ];
+        const defaultWords = [];
 
         chrome.storage.local.set({
             decks: defaultDecks,

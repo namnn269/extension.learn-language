@@ -1,23 +1,15 @@
 // Global variables
-let decks = [
-    {id: 1, name: 'Deck 1', words: []},
-    {id: 2, name: 'Deck 2', words: []},
-    {id: 3, name: 'Deck 3', words: []},
-    {id: 4, name: 'Deck 4', words: []}
-];
-
-let words = [
-    {id: 1, deckId: 1, word: 'School', ipa: '/skuːl/', meaning: 'Trường học', example: 'I go to school every day.'},
-    {id: 2, deckId: 2, word: 'Rule', ipa: '/ruːl/', meaning: 'Quy tắc', example: 'Follow the rules.'},
-    {id: 3, deckId: 3, word: 'Table', ipa: '/ˈteɪbəl/', meaning: 'Bàn', example: 'Put the book on the table.'},
-    {id: 4, deckId: 4, word: 'Chair', ipa: '/tʃeər/', meaning: 'Ghế', example: 'Sit on the chair.'}
-];
-
+let decks = [];
+let words = [];
 let selectedWords = [];
 let selectedWordId = null;
+let selectedDeckIds = [];
 let isNotificationActive = false;
 let notificationInterval = null;
 let currentEditingWordId = null;
+let confirmCallback = null;
+let currentNotificationIndex = 0;
+let lastNotifiedWordId = null;
 
 // API Keys (you need to get these from respective services)
 const DICTIONARY_API_KEY = 'your-dictionary-api-key';
@@ -32,10 +24,12 @@ const listenBtn = document.getElementById('listenBtn');
 const detailBtn = document.getElementById('detailBtn');
 const updateBtn = document.getElementById('updateBtn');
 const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+const uncheckAllBtn = document.getElementById('uncheckAllBtn');
 
 // Modal elements
 const newDeckModal = document.getElementById('newDeckModal');
 const newWordModal = document.getElementById('newWordModal');
+const confirmModal = document.getElementById('confirmModal');
 const deckNameInput = document.getElementById('deckNameInput');
 const saveDeckBtn = document.getElementById('saveDeckBtn');
 const cancelDeckBtn = document.getElementById('cancelDeckBtn');
@@ -50,6 +44,12 @@ const exampleInput = document.getElementById('exampleInput');
 const saveWordBtn = document.getElementById('saveWordBtn');
 const cancelWordBtn = document.getElementById('cancelWordBtn');
 
+// Confirm modal elements
+const confirmTitle = document.getElementById('confirmTitle');
+const confirmMessage = document.getElementById('confirmMessage');
+const confirmYesBtn = document.getElementById('confirmYesBtn');
+const confirmNoBtn = document.getElementById('confirmNoBtn');
+
 // Listen buttons
 const listenNewWordBtn = document.getElementById('listenNewWordBtn');
 const listenIpaBtn = document.getElementById('listenIpaBtn');
@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
     bindEvents();
     updateButtonStates();
     checkNotificationState();
+    checkLastNotifiedWord();
 });
 
 // Event bindings
@@ -76,12 +77,17 @@ function bindEvents() {
     detailBtn.addEventListener('click', openWordDetailModal);
     updateBtn.addEventListener('click', openWordUpdateModal);
     saveSettingsBtn.addEventListener('click', saveNotificationSettings);
+    uncheckAllBtn.addEventListener('click', uncheckAllDecks);
 
     // Modal buttons
     saveDeckBtn.addEventListener('click', saveDeck);
     cancelDeckBtn.addEventListener('click', closeNewDeckModal);
     saveWordBtn.addEventListener('click', saveWord);
     cancelWordBtn.addEventListener('click', closeNewWordModal);
+
+    // Confirm modal buttons
+    confirmYesBtn.addEventListener('click', handleConfirmYes);
+    confirmNoBtn.addEventListener('click', closeConfirmModal);
 
     // Listen buttons
     listenNewWordBtn.addEventListener('click', () => speakText(newWordInput.value));
@@ -101,8 +107,22 @@ function bindEvents() {
 
     // Vocabulary item selection
     document.addEventListener('click', function (e) {
-        if (e.target.closest('.vocabulary-item')) {
+        if (e.target.closest('.vocabulary-item') && !e.target.classList.contains('delete-word-btn')) {
             selectVocabularyItem(e.target.closest('.vocabulary-item'));
+        }
+    });
+
+    // Delete buttons
+    document.addEventListener('click', function (e) {
+        if (e.target.classList.contains('delete-deck-btn')) {
+            e.stopPropagation();
+            const deckId = parseInt(e.target.dataset.deckId);
+            confirmDeleteDeck(deckId);
+        }
+        if (e.target.classList.contains('delete-word-btn')) {
+            e.stopPropagation();
+            const wordId = parseInt(e.target.dataset.wordId);
+            confirmDeleteWord(wordId);
         }
     });
 
@@ -114,6 +134,9 @@ function bindEvents() {
         if (e.target === newWordModal) {
             closeNewWordModal();
         }
+        if (e.target === confirmModal) {
+            closeConfirmModal();
+        }
     });
 
     // Keyboard shortcuts
@@ -121,6 +144,7 @@ function bindEvents() {
         if (e.key === 'Escape') {
             closeNewDeckModal();
             closeNewWordModal();
+            closeConfirmModal();
         }
         if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
             if (newDeckModal.style.display === 'block') {
@@ -147,7 +171,7 @@ function debounce(func, wait) {
 
 // Data management
 function loadData() {
-    chrome.storage.local.get(['decks', 'words', 'notificationSettings'], function (result) {
+    chrome.storage.local.get(['decks', 'words', 'notificationSettings', 'selectedDeckIds', 'notificationMode'], function (result) {
         if (result.decks) {
             decks = result.decks;
         }
@@ -158,12 +182,38 @@ function loadData() {
             document.getElementById('timeValue').value = result.notificationSettings.timeValue;
             document.getElementById('timeUnit').value = result.notificationSettings.timeUnit;
         }
+        if (result.notificationMode) {
+            const modeRadio = document.querySelector(`input[name="notificationMode"][value="${result.notificationMode}"]`);
+            if (modeRadio) {
+                modeRadio.checked = true;
+            }
+        }
+        if (result.selectedDeckIds && result.selectedDeckIds.length > 0) {
+            selectedDeckIds = result.selectedDeckIds;
+            setTimeout(() => restoreSelectedDecks(), 100);
+        }
         updateUI();
     });
 }
 
 function saveData() {
-    chrome.storage.local.set({decks, words});
+    const notificationMode = document.querySelector('input[name="notificationMode"]:checked')?.value || 'random';
+    chrome.storage.local.set({
+        decks,
+        words,
+        selectedDeckIds: getSelectedDeckIds(),
+        notificationMode: notificationMode
+    });
+}
+
+function restoreSelectedDecks() {
+    selectedDeckIds.forEach(deckId => {
+        const checkbox = document.querySelector(`.deck-checkbox[value="${deckId}"]`);
+        if (checkbox) {
+            checkbox.checked = true;
+        }
+    });
+    updateSelectedDecks();
 }
 
 function checkNotificationState() {
@@ -171,6 +221,22 @@ function checkNotificationState() {
         if (result.isNotificationActive) {
             isNotificationActive = true;
             updateButtonStates();
+        }
+    });
+}
+
+function checkLastNotifiedWord() {
+    chrome.storage.local.get(['lastNotifiedWordId'], function (result) {
+        if (result.lastNotifiedWordId) {
+            lastNotifiedWordId = result.lastNotifiedWordId;
+            // Auto-select the last notified word if it exists in current selection
+            setTimeout(() => {
+                if (selectedWords.find(w => w.id === lastNotifiedWordId)) {
+                    selectedWordId = lastNotifiedWordId;
+                    updateSelectedWordUI();
+                    updateButtonStates();
+                }
+            }, 200);
         }
     });
 }
@@ -199,6 +265,7 @@ function updateDeckList() {
               <input type="checkbox" class="deck-checkbox" value="${deck.id}">
               <span class="deck-name">${deck.name}</span>
               <span class="deck-count">${wordCount}</span>
+              <button class="delete-deck-btn" data-deck-id="${deck.id}" title="Xóa deck">×</button>
           </label>
       `;
 
@@ -207,8 +274,8 @@ function updateDeckList() {
 }
 
 function updateVocabularyList() {
-    const selectedDeckIds = getSelectedDeckIds();
-    selectedWords = words.filter(word => selectedDeckIds.includes(word.deckId));
+    const currentSelectedDeckIds = getSelectedDeckIds();
+    selectedWords = words.filter(word => currentSelectedDeckIds.includes(word.deckId));
 
     const vocabularyList = document.querySelector('.vocabulary-list');
     vocabularyList.innerHTML = '';
@@ -218,7 +285,10 @@ function updateVocabularyList() {
         wordItem.className = 'vocabulary-item';
         wordItem.dataset.wordId = word.id;
 
-        wordItem.innerHTML = `<span class="word-text">${word.word}</span>`;
+        wordItem.innerHTML = `
+          <span class="word-text">${word.word}</span>
+          <button class="delete-word-btn" data-word-id="${word.id}" title="Xóa từ">×</button>
+      `;
 
         vocabularyList.appendChild(wordItem);
     });
@@ -253,6 +323,7 @@ function updateSelectedDecks() {
     updateVocabularyList();
     updateVocabularyCount();
     updateButtonStates();
+    saveData(); // Save selected deck state
 }
 
 function updateSelectedWordUI() {
@@ -276,6 +347,9 @@ function updateButtonStates() {
     // Update start button
     startBtn.disabled = !hasSelectedDecks || isNotificationActive;
     stopBtn.disabled = !isNotificationActive;
+
+    // Update uncheck all button
+    uncheckAllBtn.disabled = !hasSelectedDecks;
 
     // Update button visual states
     if (isNotificationActive) {
@@ -303,6 +377,18 @@ function selectVocabularyItem(item) {
     updateButtonStates();
 }
 
+function getDefaultDeckForNewWord() {
+    const currentSelectedDeckIds = getSelectedDeckIds();
+    return currentSelectedDeckIds.length > 0 ? currentSelectedDeckIds[0] : (decks.length > 0 ? decks[0].id : null);
+}
+
+function uncheckAllDecks() {
+    document.querySelectorAll('.deck-checkbox:checked').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    updateSelectedDecks();
+}
+
 // Modal functions
 function openNewDeckModal() {
     deckNameInput.value = '';
@@ -318,6 +404,13 @@ function openNewWordModal() {
     wordModalTitle.textContent = 'New Word';
     currentEditingWordId = null;
     clearWordForm();
+
+    // Set default deck
+    const defaultDeckId = getDefaultDeckForNewWord();
+    if (defaultDeckId) {
+        deckSelect.value = defaultDeckId;
+    }
+
     newWordModal.style.display = 'block';
     newWordInput.focus();
 }
@@ -376,6 +469,79 @@ function setWordFormReadonly(readonly) {
     ipaInput.readOnly = true;
 }
 
+// Confirmation modal functions
+function showConfirmModal(title, message, callback) {
+    confirmTitle.textContent = title;
+    confirmMessage.textContent = message;
+    confirmCallback = callback;
+    confirmModal.style.display = 'block';
+}
+
+function closeConfirmModal() {
+    confirmModal.style.display = 'none';
+    confirmCallback = null;
+}
+
+function handleConfirmYes() {
+    if (confirmCallback) {
+        confirmCallback();
+    }
+    closeConfirmModal();
+}
+
+function confirmDeleteDeck(deckId) {
+    const deck = decks.find(d => d.id === deckId);
+    if (!deck) return;
+
+    const wordCount = words.filter(w => w.deckId === deckId).length;
+    const message = wordCount > 0
+        ? `Bạn có chắc chắn muốn xóa deck "${deck.name}"? Điều này sẽ xóa ${wordCount} từ vựng trong deck.`
+        : `Bạn có chắc chắn muốn xóa deck "${deck.name}"?`;
+
+    showConfirmModal('Xóa Deck', message, () => deleteDeck(deckId));
+}
+
+function confirmDeleteWord(wordId) {
+    const word = words.find(w => w.id === wordId);
+    if (!word) return;
+
+    const deck = decks.find(d => d.id === word.deckId);
+    const deckName = deck ? deck.name : 'Unknown Deck';
+
+    showConfirmModal('Xóa Từ Vựng', `Bạn có chắc chắn muốn xóa từ "${word.word}" tại deck ${deckName} không?`, () => deleteWord(wordId));
+}
+
+function deleteDeck(deckId) {
+    // Remove deck
+    decks = decks.filter(deck => deck.id !== deckId);
+
+    // Remove all words in this deck
+    words = words.filter(word => word.deckId !== deckId);
+
+    // Update selected decks if this deck was selected
+    const checkbox = document.querySelector(`.deck-checkbox[value="${deckId}"]`);
+    if (checkbox && checkbox.checked) {
+        checkbox.checked = false;
+        updateSelectedDecks();
+    }
+
+    saveData();
+    updateUI();
+}
+
+function deleteWord(wordId) {
+    // Remove word
+    words = words.filter(word => word.id !== wordId);
+
+    // Update selected word if this word was selected
+    if (selectedWordId === wordId) {
+        selectedWordId = null;
+    }
+
+    saveData();
+    updateUI();
+}
+
 // Save functions
 function saveDeck() {
     const deckName = deckNameInput.value.trim();
@@ -399,6 +565,9 @@ function saveDeck() {
     saveData();
     updateUI();
     closeNewDeckModal();
+
+    // Restore selected decks after adding new deck
+    setTimeout(() => restoreSelectedDecks(), 100);
 }
 
 function saveWord() {
@@ -448,11 +617,15 @@ function saveWord() {
     saveData();
     updateUI();
     closeNewWordModal();
+
+    // Restore selected decks and vocabulary after adding/updating word
+    setTimeout(() => restoreSelectedDecks(), 100);
 }
 
 function saveNotificationSettings() {
     const timeValue = parseInt(document.getElementById('timeValue').value);
     const timeUnit = document.getElementById('timeUnit').value;
+    const notificationMode = document.querySelector('input[name="notificationMode"]:checked')?.value || 'random';
 
     if (!timeValue || timeValue < 1) {
         alert('Vui lòng nhập thời gian hợp lệ');
@@ -460,7 +633,10 @@ function saveNotificationSettings() {
     }
 
     const settings = {timeValue, timeUnit};
-    chrome.storage.local.set({notificationSettings: settings}, function () {
+    chrome.storage.local.set({
+        notificationSettings: settings,
+        notificationMode: notificationMode
+    }, function () {
         alert('Đã lưu cài đặt thông báo');
     });
 }
@@ -575,7 +751,8 @@ async function fetchFallbackTranslation(word) {
         'friend': 'bạn bè',
         'love': 'tình yêu',
         'happy': 'hạnh phúc',
-        'beautiful': 'đẹp'
+        'beautiful': 'đẹp',
+        'elephant': 'con voi'
     };
 
     const translation = mockTranslations[word.toLowerCase()];
@@ -604,6 +781,7 @@ function startNotifications() {
 
     const timeValue = parseInt(document.getElementById('timeValue').value);
     const timeUnit = document.getElementById('timeUnit').value;
+    const notificationMode = document.querySelector('input[name="notificationMode"]:checked')?.value || 'random';
 
     let intervalMs;
     switch (timeUnit) {
@@ -621,6 +799,7 @@ function startNotifications() {
     }
 
     isNotificationActive = true;
+    currentNotificationIndex = 0; // Reset index for sequential mode
     updateButtonStates();
 
     // Show first notification immediately
@@ -630,14 +809,17 @@ function startNotifications() {
     chrome.runtime.sendMessage({
         action: 'startNotifications',
         interval: intervalMs,
-        words: selectedWords
+        words: selectedWords,
+        mode: notificationMode
     });
 
     // Save notification state
     chrome.storage.local.set({
         isNotificationActive: true,
         notificationInterval: intervalMs,
-        selectedWords: selectedWords
+        selectedWords: selectedWords,
+        notificationMode: notificationMode,
+        currentNotificationIndex: currentNotificationIndex
     });
 }
 
@@ -659,12 +841,28 @@ function stopNotifications() {
 function showRandomWordNotification() {
     if (selectedWords.length === 0) return;
 
-    const randomWord = selectedWords[Math.floor(Math.random() * selectedWords.length)];
+    const notificationMode = document.querySelector('input[name="notificationMode"]:checked')?.value || 'random';
+    let selectedWord;
+
+    if (notificationMode === 'sequential') {
+        selectedWord = selectedWords[currentNotificationIndex % selectedWords.length];
+        currentNotificationIndex++;
+    } else {
+        selectedWord = selectedWords[Math.floor(Math.random() * selectedWords.length)];
+    }
+
+    // Save the last notified word ID
+    lastNotifiedWordId = selectedWord.id;
+    chrome.storage.local.set({
+        lastNotifiedWordId: lastNotifiedWordId,
+        currentNotificationIndex: currentNotificationIndex
+    });
 
     // Send message to background script to show notification
     chrome.runtime.sendMessage({
         action: 'showNotification',
-        word: randomWord.word
+        word: selectedWord.word,
+        wordId: selectedWord.id
     });
 }
 
@@ -673,5 +871,8 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     if (request.action === 'notificationStopped') {
         isNotificationActive = false;
         updateButtonStates();
+    } else if (request.action === 'wordNotified') {
+        lastNotifiedWordId = request.wordId;
+        chrome.storage.local.set({lastNotifiedWordId: lastNotifiedWordId});
     }
 });

@@ -4,7 +4,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Vocabulary Extension</title>
-	<link rel="stylesheet" href="style.css">
+	<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div class="container">
@@ -15,34 +15,13 @@
 	</div>
 	
 	<!-- Deck List Section -->
-	<div class="deck-list-section">
-		<div class="deck-item" data-deck-id="1">
-			<label class="deck-label">
-				<input type="checkbox" class="deck-checkbox" value="1">
-				<span class="deck-name">Deck 1</span>
-				<span class="deck-count">23</span>
-			</label>
+	<div class="deck-list-container">
+		<div class="deck-list-header">
+			<span class="deck-list-title">Decks</span>
+			<button id="uncheckAllBtn" class="btn btn-small btn-secondary">Uncheck All</button>
 		</div>
-		<div class="deck-item" data-deck-id="2">
-			<label class="deck-label">
-				<input type="checkbox" class="deck-checkbox" value="2">
-				<span class="deck-name">Deck 2</span>
-				<span class="deck-count">30</span>
-			</label>
-		</div>
-		<div class="deck-item" data-deck-id="3">
-			<label class="deck-label">
-				<input type="checkbox" class="deck-checkbox" value="3">
-				<span class="deck-name">Deck 3</span>
-				<span class="deck-count">4</span>
-			</label>
-		</div>
-		<div class="deck-item" data-deck-id="4">
-			<label class="deck-label">
-				<input type="checkbox" class="deck-checkbox" value="4">
-				<span class="deck-name">Deck 4</span>
-				<span class="deck-count">42</span>
-			</label>
+		<div class="deck-list-section">
+			<!-- Decks will be populated here -->
 		</div>
 	</div>
 	
@@ -56,23 +35,12 @@
 	<div class="vocabulary-section">
 		<div class="vocabulary-header">
 			<span class="vocabulary-label">Vocabulary</span>
-			<span class="vocabulary-count">72</span>
+			<span class="vocabulary-count">0</span>
 			<button id="newWordBtn" class="btn btn-secondary">New word</button>
 		</div>
 		
 		<div class="vocabulary-list">
-			<div class="vocabulary-item selected" data-word-id="1">
-				<span class="word-text">School</span>
-			</div>
-			<div class="vocabulary-item" data-word-id="2">
-				<span class="word-text">Rule</span>
-			</div>
-			<div class="vocabulary-item" data-word-id="3">
-				<span class="word-text">Table</span>
-			</div>
-			<div class="vocabulary-item" data-word-id="4">
-				<span class="word-text">Chair</span>
-			</div>
+			<!-- Words will be populated here -->
 		</div>
 		
 		<div class="vocabulary-actions">
@@ -92,8 +60,21 @@
 				<option value="minutes" selected>Phút</option>
 				<option value="hours">Giờ</option>
 			</select>
-			<button id="saveSettingsBtn" class="btn btn-primary">Save</button>
 		</div>
+		
+		<label class="settings-label">Cách hiển thị thông báo</label>
+		<div class="notification-mode-group">
+			<label class="radio-label">
+				<input type="radio" name="notificationMode" value="random" checked>
+				<span>Random</span>
+			</label>
+			<label class="radio-label">
+				<input type="radio" name="notificationMode" value="sequential">
+				<span>Theo thứ tự</span>
+			</label>
+		</div>
+		
+		<button id="saveSettingsBtn" class="btn btn-primary">Save</button>
 	</div>
 </div>
 
@@ -116,10 +97,6 @@
 		
 		<select id="deckSelect" class="input-field">
 			<option value="">Chọn deck</option>
-			<option value="1">Deck 1</option>
-			<option value="2">Deck 2</option>
-			<option value="3">Deck 3</option>
-			<option value="4">Deck 4</option>
 		</select>
 		
 		<div class="input-group">
@@ -145,6 +122,18 @@
 		<div class="modal-actions">
 			<button id="saveWordBtn" class="btn btn-primary">Save</button>
 			<button id="cancelWordBtn" class="btn btn-secondary">Cancel</button>
+		</div>
+	</div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmModal" class="modal">
+	<div class="modal-content">
+		<h3 id="confirmTitle">Xác nhận</h3>
+		<p id="confirmMessage">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+		<div class="modal-actions">
+			<button id="confirmYesBtn" class="btn btn-danger">Có</button>
+			<button id="confirmNoBtn" class="btn btn-secondary">Không</button>
 		</div>
 	</div>
 </div>
