@@ -63,7 +63,7 @@ function showWordNotification(word) {
 
     chrome.notifications.create('vocabulary-notification', {
         type: 'basic',
-        iconUrl: 'hello.png',
+        iconUrl: 'learn-language-icon.png',
         title: 'Vocabulary Learning',
         message: word,
         priority: 1
