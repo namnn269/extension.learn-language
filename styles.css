@@ -34,7 +34,6 @@ body {
 }
 
 .btn:active,
-
 .btn-dark {
     padding: 8px 16px;
     border: none;
@@ -295,6 +294,10 @@ body {
 
 .word-text {
     flex: 1;
+}
+
+#newWordBtn {
+    margin-left: auto;
 }
 
 /* Delete Word Button */
