@@ -262,7 +262,7 @@ body {
 }
 
 .vocabulary-list:empty::after {
-    content: "Chọn deck để hiển thị từ vựng";
+    content: "Select decks to display vocabulary list.";
     display: block;
     text-align: center;
     color: #888;

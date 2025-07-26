@@ -321,7 +321,7 @@ function updateVocabularyList() {
 }
 
 function updateDeckSelect() {
-    deckSelect.innerHTML = '<option value="">Chọn deck</option>';
+    deckSelect.innerHTML = '<option value="">Select deck</option>';
     decks.forEach(deck => {
         const option = document.createElement('option');
         option.value = deck.id;
@@ -763,7 +763,7 @@ function speakText(text, lang = 'en-US') {
 // Notification functions
 function startNotifications() {
     if (selectedWords.length === 0) {
-        alert('Vui lòng chọn ít nhất một deck');
+        alert('Select at least one deck');
         return;
     }
 
