@@ -8,17 +8,12 @@
 </head>
 <body>
 <div class="container">
-	<!-- Header buttons -->
-	<div class="header-buttons">
-		<button id="deckListBtn" class="btn btn-primary">Deck List</button>
-		<button id="newDeckBtn" class="btn btn-primary">New Deck</button>
-	</div>
-	
 	<!-- Deck List Section -->
 	<div class="deck-list-container">
 		<div class="deck-list-header">
 			<span class="deck-list-title">Decks</span>
-			<button id="uncheckAllBtn" class="btn btn-small btn-secondary">Uncheck All</button>
+			<button id="newDeckBtn" class="btn btn-small">New Deck</button>
+			<button id="uncheckAllBtn" class="btn btn-small">Uncheck All</button>
 		</div>
 		<div class="deck-list-section">
 			<!-- Decks will be populated here -->
@@ -36,7 +31,7 @@
 		<div class="vocabulary-header">
 			<span class="vocabulary-label">Vocabulary</span>
 			<span class="vocabulary-count">0</span>
-			<button id="newWordBtn" class="btn btn-secondary">New word</button>
+			<button id="newWordBtn" class="btn btn-small">New word</button>
 		</div>
 		
 		<div class="vocabulary-list">
@@ -44,25 +39,25 @@
 		</div>
 		
 		<div class="vocabulary-actions">
-			<button id="listenBtn" class="btn btn-info">Nghe</button>
-			<button id="detailBtn" class="btn btn-info">Chi tiết</button>
-			<button id="updateBtn" class="btn btn-warning">Cập nhật</button>
+			<button id="listenBtn" class="btn btn-info">Listen</button>
+			<button id="detailBtn" class="btn btn-info">Detail</button>
+			<button id="updateBtn" class="btn btn-warning">Update</button>
 		</div>
 	</div>
 	
 	<!-- Notification Settings -->
 	<div class="notification-settings">
-		<label class="settings-label">Khoảng thời gian thông báo</label>
+		<label class="settings-label">Notification interval</label>
 		<div class="time-input-group">
 			<input type="number" id="timeValue" class="time-input" value="20" min="1">
 			<select id="timeUnit" class="time-unit">
-				<option value="seconds">Giây</option>
-				<option value="minutes" selected>Phút</option>
-				<option value="hours">Giờ</option>
+				<option value="seconds">Second</option>
+				<option value="minutes" selected>Minute</option>
+				<option value="hours">Hour</option>
 			</select>
 		</div>
 		
-		<label class="settings-label">Cách hiển thị thông báo</label>
+		<label class="settings-label">Notification type</label>
 		<div class="notification-mode-group">
 			<label class="radio-label">
 				<input type="radio" name="notificationMode" value="random" checked>
@@ -70,11 +65,11 @@
 			</label>
 			<label class="radio-label">
 				<input type="radio" name="notificationMode" value="sequential">
-				<span>Theo thứ tự</span>
+				<span>Sequential</span>
 			</label>
 		</div>
 		
-		<button id="saveSettingsBtn" class="btn btn-primary">Save</button>
+		<button id="saveSettingsBtn" class="btn btn-dark">Save</button>
 	</div>
 </div>
 
@@ -85,7 +80,7 @@
 		<input type="text" id="deckNameInput" placeholder="Nhập tên deck" class="input-field">
 		<div class="modal-actions">
 			<button id="saveDeckBtn" class="btn btn-primary">Save</button>
-			<button id="cancelDeckBtn" class="btn btn-secondary">Cancel</button>
+			<button id="cancelDeckBtn" class="btn">Cancel</button>
 		</div>
 	</div>
 </div>
@@ -96,32 +91,32 @@
 		<h3 id="wordModalTitle">New Word</h3>
 		
 		<select id="deckSelect" class="input-field">
-			<option value="">Chọn deck</option>
+			<option value="">Deck</option>
 		</select>
 		
 		<div class="input-group">
-			<input type="text" id="newWordInput" placeholder="Nhập từ mới" class="input-field">
-			<button id="listenNewWordBtn" class="btn btn-small">Nghe</button>
+			<input type="text" id="newWordInput" placeholder="Enter new word" class="input-field">
+			<button id="listenNewWordBtn" class="btn btn-small">Listen</button>
 		</div>
 		
 		<div class="input-group">
-			<input type="text" id="ipaInput" placeholder="Phiên âm IPA" class="input-field" readonly>
-			<button id="listenIpaBtn" class="btn btn-small">Nghe</button>
+			<input type="text" id="ipaInput" placeholder="IPA" class="input-field">
+			<button id="listenIpaBtn" class="btn btn-small" style="visibility: hidden">Listen</button>
 		</div>
 		
 		<div class="input-group">
-			<textarea id="meaningInput" placeholder="Ý nghĩa" class="textarea-field"></textarea>
-			<button id="listenMeaningBtn" class="btn btn-small">Nghe</button>
+			<textarea id="meaningInput" placeholder="Meaning" class="textarea-field"></textarea>
+			<button id="listenMeaningBtn" class="btn btn-small">Listen</button>
 		</div>
 		
 		<div class="input-group">
-			<textarea id="exampleInput" placeholder="Ví dụ" class="textarea-field"></textarea>
-			<button id="listenExampleBtn" class="btn btn-small">Nghe</button>
+			<textarea id="exampleInput" placeholder="Example" class="textarea-field"></textarea>
+			<button id="listenExampleBtn" class="btn btn-small">Listen</button>
 		</div>
 		
 		<div class="modal-actions">
 			<button id="saveWordBtn" class="btn btn-primary">Save</button>
-			<button id="cancelWordBtn" class="btn btn-secondary">Cancel</button>
+			<button id="cancelWordBtn" class="btn">Cancel</button>
 		</div>
 	</div>
 </div>
@@ -129,11 +124,11 @@
 <!-- Confirmation Modal -->
 <div id="confirmModal" class="modal">
 	<div class="modal-content">
-		<h3 id="confirmTitle">Xác nhận</h3>
-		<p id="confirmMessage">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+		<h3 id="confirmTitle">Confirm</h3>
+		<p id="confirmMessage">Are you sure?</p>
 		<div class="modal-actions">
-			<button id="confirmYesBtn" class="btn btn-danger">Có</button>
-			<button id="confirmNoBtn" class="btn btn-secondary">Không</button>
+			<button id="confirmYesBtn" class="btn btn-danger">Ok</button>
+			<button id="confirmNoBtn" class="btn">Cancel</button>
 		</div>
 	</div>
 </div>

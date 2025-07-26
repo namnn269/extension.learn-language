@@ -16,13 +16,6 @@ body {
     padding: 16px;
 }
 
-/* Header Buttons */
-.header-buttons {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 16px;
-}
-
 /* Buttons */
 .btn {
     padding: 8px 16px;
@@ -41,6 +34,23 @@ body {
 }
 
 .btn:active,
+
+.btn-dark {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    background-color: #2f2f2f;
+    color: white;
+}
+
+.btn-dark:hover {
+    background-color: #555555;
+}
+
 .btn.selected {
     background-color: #292929;
 }
@@ -115,7 +125,7 @@ body {
 .deck-label {
     display: flex;
     align-items: center;
-    padding: 8px 32px 8px 12px;
+    padding: 8px 60px 8px 12px; /* Increased right padding for two buttons */
     background-color: #454545;
     border-radius: 6px;
     cursor: pointer;
@@ -152,12 +162,41 @@ body {
     margin-right: 8px;
 }
 
-/* Delete Deck Button */
-.delete-deck-btn {
+/* Deck Action Buttons Container */
+.deck-actions {
     position: absolute;
     right: 8px;
     top: 50%;
     transform: translateY(-50%);
+    display: flex;
+    gap: 4px;
+}
+
+/* Update Deck Button */
+.update-deck-btn {
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 50%;
+    background-color: #ffc107;
+    color: #212529;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.7;
+    transition: opacity 0.2s, background-color 0.2s;
+}
+
+.update-deck-btn:hover {
+    opacity: 1;
+    background-color: #e0a800;
+}
+
+/* Delete Deck Button */
+.delete-deck-btn {
     width: 20px;
     height: 20px;
     border: none;
@@ -171,7 +210,7 @@ body {
     align-items: center;
     justify-content: center;
     opacity: 0.7;
-    transition: opacity 0.2s;
+    transition: opacity 0.2s, background-color 0.2s;
 }
 
 .delete-deck-btn:hover {
@@ -533,4 +572,15 @@ body {
     margin-bottom: 16px;
     text-align: center;
     line-height: 1.4;
+}
+
+.deck-vocabulary-item {
+    background-color: #3d2927;
+    padding: 8px 32px 8px 12px;
+    transition: background-color 0.2s;
+    border-bottom: 1px solid #555555;
+    position: relative;
+    display: flex;
+    align-items: center;
+    border-radius: max(9999px);
 }

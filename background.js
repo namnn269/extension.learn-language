@@ -1,13 +1,15 @@
 // Background script for vocabulary extension
-let notificationInterval = null;
+let notificationIntervalId = null;
 let selectedWords = [];
 let isActive = false;
+let wordIndexToNoti = 1;
+let popupIsOpen = false;
 
 // Listen for messages from popup
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
     switch (request.action) {
         case 'startNotifications':
-            startNotifications(request.interval, request.words);
+            startNotifications(request.interval, request.words, request.mode);
             break;
         case 'stopNotifications':
             stopNotifications();
@@ -19,33 +21,49 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 });
 
 // Start notification system
-function startNotifications(interval, words) {
+function startNotifications(interval, words, mode) {
     selectedWords = words;
     isActive = true;
+    wordIndexToNoti = 1;
 
     // Clear any existing interval
-    if (notificationInterval) {
-        clearInterval(notificationInterval);
+    if (notificationIntervalId) {
+        clearInterval(notificationIntervalId);
     }
 
     // Set up new interval
-    notificationInterval = setInterval(() => {
-        if (selectedWords.length > 0) {
-            const randomWord = selectedWords[Math.floor(Math.random() * selectedWords.length)];
-            showWordNotification(randomWord.word);
+    notificationIntervalId = setInterval(() => {
+        if (selectedWords.length === 0) {
+            return;
         }
+
+        let wordToNoti;
+        if (mode === 'random') {
+            wordToNoti = selectedWords[Math.floor(Math.random() * selectedWords.length)];
+        } else {
+            wordToNoti = selectedWords[wordIndexToNoti % selectedWords.length];
+            wordIndexToNoti++;
+        }
+
+        showWordNotification(wordToNoti.word);
+        updateLastNotifiedWordId(wordToNoti);
     }, interval);
 
     console.log('Notifications started with interval:', interval);
+}
+
+function updateLastNotifiedWordId(word) {
+    chrome.storage.local.set({lastNotifiedWordId: word.id}).catch(e => `error set storage: ${e}`)
+    chrome.runtime.sendMessage({action: 'updateLastNotifiedWordId'}).catch(e => `error push event updateLastNotifiedWordId: ${e}`)
 }
 
 // Stop notification system
 function stopNotifications() {
     isActive = false;
 
-    if (notificationInterval) {
-        clearInterval(notificationInterval);
-        notificationInterval = null;
+    if (notificationIntervalId) {
+        clearInterval(notificationIntervalId);
+        notificationIntervalId = null;
     }
 
     // Clear any existing notifications
@@ -76,12 +94,33 @@ function showWordNotification(word) {
     });
 }
 
+// connect to port when popup open
+chrome.runtime.onConnect.addListener(port => {
+    if (port.name !== "popup_open") {
+        return;
+    }
+
+    popupIsOpen = true;
+
+    port.onDisconnect.addListener(() => {
+        popupIsOpen = false;
+    });
+});
+
 // Handle notification clicks
 chrome.notifications.onClicked.addListener(function (notificationId) {
-    if (notificationId === 'vocabulary-notification') {
-        // Open popup when notification is clicked
-        chrome.action.openPopup();
-    }
+    if (notificationId !== 'vocabulary-notification')
+        return;
+
+    if (popupIsOpen)
+        return;
+
+    // Open popup when notification is clicked
+    chrome.action.openPopup()
+        .then(() => {
+            popupIsOpen = true;
+        })
+        .catch(e => console.error(`==> error when opening popup: ${e.message}`));
 });
 
 // Handle extension startup
@@ -113,12 +152,6 @@ chrome.runtime.onInstalled.addListener(function (details) {
             }
         });
     }
-});
-
-// Handle browser action click (when extension icon is clicked)
-chrome.action.onClicked.addListener(function (tab) {
-    // This will open the popup
-    chrome.action.openPopup();
 });
 
 // Periodic cleanup of old notifications

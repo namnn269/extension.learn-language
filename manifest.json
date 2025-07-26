@@ -1,6 +1,6 @@
 {
-  "name": "hello extension",
-  "description": "first extension",
+  "name": "Vocabulary Extension",
+  "description": "Vocabulary Extension",
   "version": "1.0",
   "manifest_version": 3,
   "permissions": [
@@ -8,6 +8,8 @@
     "alarms",
     "notifications",
     "tts",
+    "scripting",
+    "windows",
     "activeTab",
     "idle"
   ],
