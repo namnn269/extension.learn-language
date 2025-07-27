@@ -2,7 +2,7 @@
 let popupIsOpen = false;
 
 // Listen for messages from popup
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function (request) {
     if (request.action === 'startNotifications') {
         startNotifications(request.interval, request.words, request.mode);
     } else if (request.action === 'stopNotifications') {
@@ -19,14 +19,14 @@ chrome.alarms.onAlarm.addListener(function (alarm) {
 
 function startNotifications(intervalMs, words, mode) {
     // Clear any existing alarms
-    chrome.alarms.clear('vocabularyNotification');
+    chrome.alarms.clear('vocabularyNotification').then();
 
     // Create new alarm with interval in minutes
     const intervalMinutes = intervalMs / (1000 * 60);
     chrome.alarms.create('vocabularyNotification', {
         delayInMinutes: 1, // Show first notification after 6 seconds
         periodInMinutes: intervalMinutes
-    });
+    }).then();
 
     // Save state
     chrome.storage.local.set({
@@ -39,7 +39,7 @@ function startNotifications(intervalMs, words, mode) {
 
 function stopNotifications() {
     // Clear the alarm
-    chrome.alarms.clear('vocabularyNotification');
+    chrome.alarms.clear('vocabularyNotification').then();
 
     // Clear state
     chrome.storage.local.set({
@@ -72,7 +72,7 @@ function showWordNotification() {
                 // Save updated index
                 chrome.storage.local.set({
                     currentNotificationIndex: currentNotificationIndex
-                });
+                }).then();
             } else {
                 selectedWord = notificationWords[Math.floor(Math.random() * notificationWords.length)];
             }
@@ -88,10 +88,10 @@ function showNotification(word, wordId) {
         title: 'Vocabulary Reminder',
         message: word,
         priority: 1
-    });
+    }).then();
 
     // Save last notified word
-    chrome.storage.local.set({lastNotifiedWordId: wordId});
+    chrome.storage.local.set({lastNotifiedWordId: wordId}).then();
     chrome.runtime.sendMessage({action: 'updateLastNotifiedWordId'})
         .catch(e => `error push event updateLastNotifiedWordId: ${e}`)
 }
@@ -137,7 +137,7 @@ chrome.notifications.onClicked.addListener(function (notificationId) {
     if (notificationId !== 'vocabulary-notification')
         return;
 
-    chrome.notifications.clear('vocabulary-notification');
+    chrome.notifications.clear('vocabulary-notification').then();
 
     if (popupIsOpen)
         return;
