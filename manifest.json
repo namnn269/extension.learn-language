@@ -18,8 +18,7 @@
     "type": "module"
   },
   "host_permissions": [
-    "https://api.dictionaryapi.dev/*",
-    "https://translation.googleapis.com/*"
+    "https://api.dictionaryapi.dev/*"
   ],
   "action": {
     "default_popup": "popup.html",

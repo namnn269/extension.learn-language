@@ -239,7 +239,7 @@ function checkLastNotifiedWord() {
                     updateSelectedWordUI();
                     updateButtonStates();
                 }
-            }, 200);
+            }, 100);
         }
     });
 }
@@ -686,7 +686,26 @@ function saveNotificationSettings() {
     const notificationMode = document.querySelector('input[name="notificationMode"]:checked')?.value || 'random';
 
     if (!timeValue || timeValue < 1) {
-        alert('Enter valid time unit please!');
+        alert('Time unit is invalid!');
+        return;
+    }
+
+    // Validate minimum time for alarms
+    let intervalMs;
+    switch (timeUnit) {
+        case 'seconds':
+            intervalMs = timeValue * 1000;
+            break;
+        case 'minutes':
+            intervalMs = timeValue * 60 * 1000;
+            break;
+        case 'hours':
+            intervalMs = timeValue * 60 * 60 * 1000;
+            break;
+    }
+
+    if (intervalMs < 60000) {
+        alert('Minimum configuration time is 60 seconds!');
         return;
     }
 
@@ -702,7 +721,8 @@ function saveNotificationSettings() {
 // Word input change handler with API integration
 async function onWordInputChange() {
     const word = newWordInput.value.trim();
-    if (word.length < 2) return;
+    if (word.length < 2 || !/^[a-z]+$/i.test(word))
+        return;
 
     try {
         // Show loading state
@@ -751,7 +771,7 @@ async function fetchFromDictionaryAPI(word) {
 function speakText(text, lang = 'en-US') {
     if (!text) return;
 
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(text.toLowerCase());
     utterance.lang = lang;
     utterance.rate = 0.8;
     utterance.volume = 0.8;
@@ -786,11 +806,14 @@ function startNotifications() {
             intervalMs = 20 * 60 * 1000; // Default 20 minutes
     }
 
+    // Validate minimum interval (Chrome alarms minimum is 1 minute)
+    if (intervalMs < 60000) {
+        alert('Minimum configuration time is 60 seconds!');
+        return;
+    }
+
     isNotificationActive = true;
     updateButtonStates();
-
-    // Show first notification immediately
-    showFirstWordNotification();
 
     // Send message to background script to start notifications
     chrome.runtime.sendMessage({
@@ -805,7 +828,7 @@ function startNotifications() {
         isNotificationActive: true,
         notificationInterval: intervalMs,
         selectedWords: selectedWords,
-        notificationMode: notificationMode,
+        notificationMode: notificationMode
     });
 }
 
@@ -822,35 +845,6 @@ function stopNotifications() {
     chrome.storage.local.set({
         isNotificationActive: false
     });
-}
-
-function showFirstWordNotification() {
-    if (selectedWords.length === 0) return;
-
-    const notificationMode = document.querySelector('input[name="notificationMode"]:checked')?.value || 'random';
-    let selectedWord;
-
-    if (notificationMode === 'sequential') {
-        selectedWord = selectedWords[0];
-    } else {
-        selectedWord = selectedWords[Math.floor(Math.random() * selectedWords.length)];
-    }
-
-    // Save the last notified word ID
-    lastNotifiedWordId = selectedWord.id;
-    chrome.storage.local.set({
-        lastNotifiedWordId: lastNotifiedWordId,
-    });
-
-    // Send message to background script to show notification
-    chrome.runtime.sendMessage({
-        action: 'showNotification',
-        word: selectedWord.word,
-        wordId: selectedWord.id
-    });
-
-    selectedWordId = selectedWord.id;
-    updateSelectedWordUI();
 }
 
 // Listen for messages from background script

@@ -104,7 +104,7 @@ body {
 }
 
 .deck-list-section:empty::after {
-    content: "Chưa có deck nào. Nhấn 'New Deck' để tạo deck mới.";
+    content: "Press 'New Deck' to create new deck.";
     display: block;
     text-align: center;
     color: #888;
