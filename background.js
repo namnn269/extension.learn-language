@@ -1,7 +1,4 @@
 // Thay thế toàn bộ background.js
-let notificationWords = [];
-let currentNotificationIndex = 0;
-let notificationMode = 'random';
 let popupIsOpen = false;
 
 // Listen for messages from popup
@@ -21,17 +18,13 @@ chrome.alarms.onAlarm.addListener(function (alarm) {
 });
 
 function startNotifications(intervalMs, words, mode) {
-    notificationWords = words;
-    notificationMode = mode;
-    currentNotificationIndex = 0;
-
     // Clear any existing alarms
     chrome.alarms.clear('vocabularyNotification');
 
     // Create new alarm with interval in minutes
     const intervalMinutes = intervalMs / (1000 * 60);
     chrome.alarms.create('vocabularyNotification', {
-        delayInMinutes: 0.1, // Show first notification after 6 seconds
+        delayInMinutes: 1, // Show first notification after 6 seconds
         periodInMinutes: intervalMinutes
     });
 
@@ -40,7 +33,7 @@ function startNotifications(intervalMs, words, mode) {
         isNotificationActive: true,
         notificationWords: words,
         notificationMode: mode,
-        currentNotificationIndex: currentNotificationIndex
+        currentNotificationIndex: 0
     });
 }
 
@@ -63,23 +56,29 @@ function stopNotifications() {
 }
 
 function showWordNotification() {
-    if (notificationWords.length === 0) return;
+    chrome.storage.local.get(['notificationWords', 'notificationMode', 'currentNotificationIndex'],
+        function (result) {
+            let notificationWords = result.notificationWords;
+            let currentNotificationIndex = result.currentNotificationIndex;
+            let notificationMode = result.notificationMode;
+            if (notificationWords.length === 0) return;
 
-    let selectedWord;
+            let selectedWord;
 
-    if (notificationMode === 'sequential') {
-        selectedWord = notificationWords[currentNotificationIndex % notificationWords.length];
-        currentNotificationIndex++;
+            if (notificationMode === 'sequential') {
+                selectedWord = notificationWords[currentNotificationIndex % notificationWords.length];
+                currentNotificationIndex++;
 
-        // Save updated index
-        chrome.storage.local.set({
-            currentNotificationIndex: currentNotificationIndex
+                // Save updated index
+                chrome.storage.local.set({
+                    currentNotificationIndex: currentNotificationIndex
+                });
+            } else {
+                selectedWord = notificationWords[Math.floor(Math.random() * notificationWords.length)];
+            }
+
+            showNotification(selectedWord.word, selectedWord.id);
         });
-    } else {
-        selectedWord = notificationWords[Math.floor(Math.random() * notificationWords.length)];
-    }
-
-    showNotification(selectedWord.word, selectedWord.id);
 }
 
 function showNotification(word, wordId) {
@@ -109,10 +108,6 @@ chrome.runtime.onInstalled.addListener(function () {
 function restoreNotificationState() {
     chrome.storage.local.get(['isNotificationActive', 'notificationWords', 'notificationMode', 'currentNotificationIndex', 'notificationSettings'], function (result) {
         if (result.isNotificationActive && result.notificationWords && result.notificationWords.length > 0) {
-            notificationWords = result.notificationWords;
-            notificationMode = result.notificationMode || 'random';
-            currentNotificationIndex = result.currentNotificationIndex || 0;
-
             // Restore alarm if it was active
             const settings = result.notificationSettings || {timeValue: 20, timeUnit: 'minutes'};
             let intervalMs;
@@ -131,7 +126,7 @@ function restoreNotificationState() {
                     intervalMs = 20 * 60 * 1000;
             }
 
-            startNotifications(intervalMs, notificationWords, notificationMode);
+            startNotifications(intervalMs, result.notificationWords, result.notificationMode || 'random');
         }
     });
 }

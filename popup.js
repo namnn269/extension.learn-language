@@ -5,7 +5,6 @@ let selectedWords = [];
 let selectedWordId = null;
 let selectedDeckIds = [];
 let isNotificationActive = false;
-let notificationInterval = null;
 let currentEditingWordId = null;
 let confirmCallback = null;
 let lastNotifiedWordId = null;
@@ -120,7 +119,7 @@ function bindEvents() {
         }
         if (e.target.classList.contains('word-text')) {
             e.stopPropagation();
-            chrome.storage.local.set({lastNotifiedWordId: parseInt(e.target.dataset.wordId)});
+            chrome.storage.local.set({lastNotifiedWordId: parseInt(e.target.dataset.wordId)}).then();
         }
         if (e.target.classList.contains('delete-word-btn')) {
             e.stopPropagation();
@@ -206,7 +205,7 @@ function saveData() {
         words,
         selectedDeckIds: getSelectedDeckIds(),
         notificationMode: notificationMode
-    });
+    }).then();
 }
 
 function restoreSelectedDecks() {
@@ -332,7 +331,7 @@ function updateDeckSelect() {
 
 function updateVocabularyCount() {
     const vocabularyCount = document.querySelector('.vocabulary-count');
-    vocabularyCount.textContent = selectedWords.length;
+    vocabularyCount.textContent = selectedWords.length + '';
 }
 
 function updateSelectedDecks() {
@@ -821,7 +820,7 @@ function startNotifications() {
         interval: intervalMs,
         words: selectedWords,
         mode: notificationMode
-    });
+    }).then();
 
     // Save notification state
     chrome.storage.local.set({
@@ -829,7 +828,7 @@ function startNotifications() {
         notificationInterval: intervalMs,
         selectedWords: selectedWords,
         notificationMode: notificationMode
-    });
+    }).then();
 }
 
 function stopNotifications() {
@@ -839,16 +838,16 @@ function stopNotifications() {
     // Send message to background script to stop notifications
     chrome.runtime.sendMessage({
         action: 'stopNotifications'
-    });
+    }).then();
 
     // Clear notification state
     chrome.storage.local.set({
         isNotificationActive: false
-    });
+    }).then();
 }
 
 // Listen for messages from background script
-chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+chrome.runtime.onMessage.addListener(function (request) {
     if (request.action === 'notificationStopped') {
         isNotificationActive = false;
         updateButtonStates();
