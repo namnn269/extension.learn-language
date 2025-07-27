@@ -25,7 +25,7 @@
     "default_title": "Vocabulary Learning"
   },
   "icons": {
-    "16": "learn-language-icon.png"
+    "16": "logo.png"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"

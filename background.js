@@ -84,7 +84,7 @@ function showWordNotification() {
 function showNotification(word, wordId) {
     chrome.notifications.create('vocabulary-notification', {
         type: 'basic',
-        iconUrl: 'learn-language-icon.png',
+        iconUrl: 'logo.png',
         title: 'Vocabulary Reminder',
         message: word,
         priority: 1
