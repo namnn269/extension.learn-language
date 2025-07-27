@@ -444,6 +444,8 @@ function openNewWordModal() {
     }
 
     newWordModal.style.display = 'block';
+    saveWordBtn.style.display = 'inline'
+    cancelWordBtn.style.display = 'inline'
     newWordInput.focus();
 }
 
@@ -456,6 +458,8 @@ function openWordDetailModal() {
     fillWordForm(word);
     setWordFormReadonly(true);
     newWordModal.style.display = 'block';
+    saveWordBtn.style.display = 'none';
+    cancelWordBtn.style.display = 'none';
 }
 
 function openWordUpdateModal() {
@@ -468,6 +472,8 @@ function openWordUpdateModal() {
     setWordFormReadonly(false);
     newWordModal.style.display = 'block';
     newWordInput.focus();
+    saveWordBtn.style.display = 'inline'
+    cancelWordBtn.style.display = 'inline'
 }
 
 function closeNewWordModal() {
