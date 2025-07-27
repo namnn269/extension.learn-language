@@ -686,12 +686,12 @@ function saveWord() {
 }
 
 function saveNotificationSettings() {
-    const timeValue = parseInt(document.getElementById('timeValue').value);
+    const timeValue = parseFloat(document.getElementById('timeValue').value);
     const timeUnit = document.getElementById('timeUnit').value;
     const notificationMode = document.querySelector('input[name="notificationMode"]:checked')?.value || 'random';
 
-    if (!timeValue || timeValue < 1) {
-        alert('Time unit is invalid!');
+    if (!timeValue || timeValue < 0) {
+        alert('Time value is invalid!');
         return;
     }
 
