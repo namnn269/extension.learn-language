@@ -1,4 +1,3 @@
-// Thay thế toàn bộ background.js
 let popupIsOpen = false;
 
 // Listen for messages from popup
@@ -82,13 +81,16 @@ function showWordNotification() {
 }
 
 function showNotification(word, wordId) {
-    chrome.notifications.create('vocabulary-notification', {
-        type: 'basic',
-        iconUrl: 'logo.png',
-        title: 'Vocabulary Reminder',
-        message: word,
-        priority: 1
-    }).then();
+    chrome.notifications.clear('vocabulary-notification')
+        .then(() => {
+            chrome.notifications.create('vocabulary-notification', {
+                type: 'basic',
+                iconUrl: 'logo.png',
+                title: 'Vocabulary Reminder',
+                message: word,
+                priority: 1
+            }).catch(e => console.error(`error when showing noti: ${e}`));
+        });
 
     // Save last notified word
     chrome.storage.local.set({lastNotifiedWordId: wordId}).then();
@@ -143,16 +145,31 @@ chrome.notifications.onClicked.addListener(function (notificationId) {
         return;
 
     // Open popup when notification is clicked
+    chrome.windows.getLastFocused({}, (window) => {
+        if (!window) {
+            chrome.windows.create({}, () => {
+                openPopup()
+            });
+        } else {
+            chrome.windows.update(window.id, {focused: true}, () => {
+                openPopup()
+            });
+        }
+    });
+});
+
+// Open popup when notification is clicked
+function openPopup() {
     chrome.action.openPopup()
         .then(() => {
             popupIsOpen = true;
         })
         .catch(e => console.error(`==> error when opening popup: ${e.message}`));
-});
+}
 
 // connect to port when popup open
 chrome.runtime.onConnect.addListener(port => {
-    if (port.name !== "popup_open") {
+    if (port.name !== 'popup_open') {
         return;
     }
 

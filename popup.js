@@ -863,4 +863,4 @@ chrome.runtime.onMessage.addListener(function (request) {
 });
 
 // trigger a sign to notify background that popup is open
-chrome.runtime.connect({name: "popup_open"});
+chrome.runtime.connect({name: 'popup_open'});
