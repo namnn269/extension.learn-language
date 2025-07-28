@@ -25,10 +25,10 @@
     "default_title": "Vocabulary Learning"
   },
   "icons": {
-    "16": "64x64.png",
-    "32": "128x128.png",
-    "64": "256x256.png",
-    "128": "512x512.png"
+    "16": "icons/64x64.png",
+    "32": "icons/128x128.png",
+    "64": "icons/256x256.png",
+    "128": "icons/512x512.png"
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
