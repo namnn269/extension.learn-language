@@ -85,7 +85,7 @@ function showNotification(word, wordId) {
         .then(() => {
             chrome.notifications.create('vocabulary-notification', {
                 type: 'basic',
-                iconUrl: 'logo.png',
+                iconUrl: '256x256.png',
                 title: 'Vocabulary Reminder',
                 message: word,
                 priority: 1
